@@ -1,0 +1,6 @@
+POST https://vjmicpnc2k.execute-api.us-east-2.amazonaws.com/RUFinger
+Content-Type: application/json
+
+{
+    "maxID": 7000000000
+}
