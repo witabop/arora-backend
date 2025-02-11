@@ -1,0 +1,58 @@
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install zip tool
+        uses: montudor/action-zip@v1
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          aws --version
+
+      - name: Identify changed folders
+        id: changed-files
+        run: |
+          # Get list of changed files between the previous and current commit
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          echo "Changed files: $FILES"
+          
+          # Extract top-level directories and filter for 'finger' or 'brain'
+          DIRS=$(echo "$FILES" | awk -F/ '{print $1}' | sort -u)
+          TARGET_DIRS=""
+          for DIR in $DIRS; do
+            if [ "$DIR" = "finger" ] || [ "$DIR" = "brain" ]; then
+              TARGET_DIRS="$TARGET_DIRS $DIR"
+            fi
+          done
+          TARGET_DIRS=$(echo "$TARGET_DIRS" | xargs)  # Remove leading/trailing spaces
+          
+          echo "Changed directories: $TARGET_DIRS"
+          echo "dirs=$TARGET_DIRS" >> $GITHUB_OUTPUT  # Set output for next steps
+
+      - name: Deploy changed directories
+        run: |
+          for dir in ${{ steps.changed-files.outputs.dirs }}; do
+            echo "Zipping $dir directory..."
+            zip -r "$dir.zip" "$dir"
+            
+            echo "Updating Lambda function for $dir..."
+            aws lambda update-function-code \
+              --function-name "arn:aws:lambda:us-east-1:146039528711:function:${dir}Function" \
+              --zip-file "fileb://$dir.zip"
+          done
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-east-1"
