@@ -38,6 +38,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		ValidIDs: validIDs,
 	}
 
+	// test
 	bytesResponse, err := json.Marshal(responseData)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
