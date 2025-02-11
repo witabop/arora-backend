@@ -36,7 +36,7 @@ jobs:
           DIRS=$(echo "$FILES" | awk -F/ '{print $1}' | sort -u)
           TARGET_DIRS=""
           for DIR in $DIRS; do
-            if [ "$DIR" = "finger" ] || [ "$DIR" = "brain" ]; then
+            if [ "$DIR" = "Finger" ] || [ "$DIR" = "Brain" ]; then
               TARGET_DIRS="$TARGET_DIRS $DIR"
             fi
           done
