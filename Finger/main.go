@@ -41,6 +41,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// test
 	// test 2
 	//test 3
+	//test 4
 	bytesResponse, err := json.Marshal(responseData)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
