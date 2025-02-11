@@ -25,6 +25,7 @@ jobs:
         id: changed-files
         run: |
           # Get list of changed files between the previous and current commit
+          echo "Test"
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
           echo "Changed files: $FILES"
           
