@@ -29,6 +29,7 @@ jobs:
         run: |
           # Get list of changed files between the previous and current commit
           echo "Test"
+          echo "${{ secrets.AWS_ACCESS_KEY_ID }}"
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
           echo "Changed files: $FILES"
           
@@ -50,7 +51,6 @@ jobs:
           for dir in ${{ steps.changed-files.outputs.dirs }}; do
             echo "Zipping $dir directory..."
             zip -r "$dir.zip" "$dir"
-            echo "$AWS_ACCESS_KEY_ID"
             echo "Updating Lambda function for $dir..."
             aws lambda update-function-code \
               --function-name "arn:aws:lambda:us-east-1:146039528711:function:RU${dir}" \
