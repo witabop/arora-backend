@@ -57,6 +57,6 @@ jobs:
               --zip-file "fileb://$dir.zip"
           done
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: "AKIAST6S7GRUGOFWB6PY"
+          AWS_SECRET_ACCESS_KEY: "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"
           AWS_DEFAULT_REGION: "us-east-1"
