@@ -8,6 +8,8 @@ phases:
   build:
     commands:
     - echo "testing 123"
+    - cd search
+    - for dir in */ ; do dirname=${dir%/}; zip -rj "${dirname}.zip" "$dirname/"; aws lambda update-function-code --function-name "arora-search-${dirname}" --zip-file "fileb://${dirname}.zip" --publish; done
     # - for dir in */ ; do
     #     dirname=${dir%/};
     #     zip -rj "${dirname}.zip" "$dirname/";
