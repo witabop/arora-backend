@@ -12,7 +12,11 @@ phases:
       for dir in */ ; do
         dirname=${dir%/};
         cd "$dirname";
-        GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go;
+        GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go || { echo "Build failed"; exit 1; };
+        if [ ! -f "bootstrap" ]; then
+          echo "Error: bootstrap not created in $dirname";
+          exit 1;
+        fi
         chmod +x bootstrap;
         zip -j "../${dirname}.zip" bootstrap;
         cd ..
@@ -25,8 +29,9 @@ phases:
     # 1. loop through the directories in the lambdas directory
     # 2. set the directory name to the name of the current directory
     # 3. cd into the directory we are working with
-    # 4. build the go binary as "bootstrap" (needed for lambda execution)
-    # 5. make the bootstrap executable
-    # 6. zip the bootstrap file (this is what we send to the lambda function)
-    # 7. cd out of the directory we just worked with
-    # 8. deploy the new function code to lambda and publish it as a new version
+    # 4. build the go binary as "bootstrap" (needed for lambda execution) (if this fails then exit)
+    # 5. check if the bootstrap file exists, if not then log and fail
+    # 6. make the bootstrap executable
+    # 7. zip the bootstrap file (this is what we send to the lambda function)
+    # 8. cd out of the directory we just worked with
+    # 9. deploy the new function code to lambda and publish it as a new version
