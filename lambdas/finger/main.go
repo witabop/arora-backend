@@ -1,28 +1,20 @@
 package main
 
 import (
+	"arora-search-finger/body"
+	"arora-search-finger/layer"
 	"encoding/json"
-	"roblox-universe-finger/body"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-type RequestData struct {
-	MaxID *int64 `json:"maxID"`
-}
-
-type ResponseData struct {
-	Success  int8    `json:"success"`
-	ValidIDs []int64 `json:"validIDs"`
-}
 
 func main() {
 	lambda.Start(handler)
 }
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var requestData RequestData
+	var requestData layer.RequestData
 	if err := json.Unmarshal([]byte(request.Body), &requestData); err != nil {
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
@@ -33,16 +25,11 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	finger := body.Finger(*requestData.MaxID)
 	validIDs, suc := finger.Feel()
 
-	responseData := ResponseData{
+	responseData := layer.ResponseData{
 		Success:  suc,
 		ValidIDs: validIDs,
 	}
 
-	// test
-	// test 2
-	//test 3
-	//test 4789tt
-	//test 5
 	bytesResponse, err := json.Marshal(responseData)
 	if err != nil {
 		return events.APIGatewayProxyResponse{

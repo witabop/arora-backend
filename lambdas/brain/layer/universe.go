@@ -1,7 +1,8 @@
-package body
+package layer
 
 import "time"
 
+// universe creator struct
 type Creator struct {
 	ID           *int64  `json:"id"`
 	Name         *string `json:"name"`
@@ -9,6 +10,7 @@ type Creator struct {
 	IsRNVAccount *bool   `json:"isRNVAccount"`
 }
 
+// universe struct
 type Universe struct {
 	ID                        *int64         `json:"id"`
 	RootPlaceID               *int64         `json:"rootPlaceId"`
@@ -37,6 +39,7 @@ type Universe struct {
 	LicenseDescription        *string        `json:"licenseDescription"`
 }
 
-type UResponse struct {
+// roblox api response
+type UniverseResponse struct {
 	Data *[]Universe `json:"data"`
 }

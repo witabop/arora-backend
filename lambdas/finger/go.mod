@@ -1,4 +1,4 @@
-module roblox-universe-finger
+module arora-search-finger
 
 go 1.23.5
 

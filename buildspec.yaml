@@ -4,14 +4,29 @@ phases:
   install:
     commands:
     - yum update -y
-    - yum install -y zip
+    - yum install -y zip golang
   build:
     commands:
-    - echo "testing 123"
-    - cd search
-    - for dir in */ ; do dirname=${dir%/}; zip -rj "${dirname}.zip" "$dirname/"; aws lambda update-function-code --function-name "arora-search-${dirname}" --zip-file "fileb://${dirname}.zip" --publish; done
-    # - for dir in */ ; do
-    #     dirname=${dir%/};
-    #     zip -rj "${dirname}.zip" "$dirname/";
-    #     aws lambda update-function-code --function-name "arora-search-${dirname}" --zip-file "fileb://${dirname}.zip" --publish;
-    #   done
+    - cd lambdas # we need to be in the lambdas directory
+    - | # we just use this to allow multiline command formatting for easier readability
+      for dir in */ ; do
+        dirname=${dir%/};
+        cd "$dirname";
+        GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go;
+        chmod +x bootstrap;
+        zip -j "../${dirname}.zip" bootstrap;
+        cd ..
+        aws lambda update-function-code \
+          --function-name "arora-search-${dirname}" \
+          --zip-file "fileb://${dirname}.zip" \
+          --publish;
+      done
+    # the previous code does the following:
+    # 1. loop through the directories in the lambdas directory
+    # 2. set the directory name to the name of the current directory
+    # 3. cd into the directory we are working with
+    # 4. build the go binary as "bootstrap" (needed for lambda execution)
+    # 5. make the bootstrap executable
+    # 6. zip the bootstrap file (this is what we send to the lambda function)
+    # 7. cd out of the directory we just worked with
+    # 8. deploy the new function code to lambda and publish it as a new version

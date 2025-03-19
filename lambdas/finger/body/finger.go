@@ -1,6 +1,7 @@
 package body
 
 import (
+	"arora-search-finger/layer"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -77,12 +78,12 @@ func (finger *finger) touch(start int64, end int64) {
 		return
 	}
 
-	var uResponse UResponse
-	if err := json.Unmarshal(body, &uResponse); err != nil {
+	var UniverseResponse layer.UniverseResponse
+	if err := json.Unmarshal(body, &UniverseResponse); err != nil {
 		return
 	}
 
-	if uResponse.Data == nil {
+	if UniverseResponse.Data == nil {
 		return
 	}
 
@@ -90,7 +91,7 @@ func (finger *finger) touch(start int64, end int64) {
 	suc++
 	finger.mu.Unlock()
 
-	for _, universe := range *uResponse.Data {
+	for _, universe := range *UniverseResponse.Data {
 		if finger.validateUniverse(universe) {
 			finger.addValidID(*universe.RootPlaceID)
 		}
@@ -125,7 +126,7 @@ func (finger *finger) formatIDs(start int64, end int64) string {
 	return builder.String()
 }
 
-func (finger *finger) validateUniverse(universe Universe) bool {
+func (finger *finger) validateUniverse(universe layer.Universe) bool {
 	return (*universe.Playing >= 1 || *universe.Visits >= 1)
 }
 
