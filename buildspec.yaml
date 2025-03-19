@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+    - apt-get update -y
+    - apt-get install -y zip
+  build:
+    commands:
+    - echo "testing 123"
+    # - for dir in */ ; do
+    #     dirname=${dir%/};
+    #     zip -rj "${dirname}.zip" "$dirname/";
+    #     aws lambda update-function-code --function-name "arora-search-${dirname}" --zip-file "fileb://${dirname}.zip" --publish;
+    #   done
