@@ -2,17 +2,20 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      golang: 1.23.5
     commands:
+    # - runtime-v
     # - yum update -y
-    # - yum install -y zip golang
-    - yum update -y
-    - yum install -y zip tar gzip # Required for Go installation
-    # Install Go 1.23.5
-    - curl -OL https://go.dev/dl/go1.23.5.linux-arm64.tar.gz # ARM64 (Graviton)
-    # For x86_64: curl -OL https://go.dev/dl/go1.23.5.linux-amd64.tar.gz
-    - tar -C /usr/local -xzf go1.23.5.linux-arm64.tar.gz
-    - export PATH=$PATH:/usr/local/go/bin
-    - go version # Verify installation
+    - yum install -y zip
+    # - yum update -y
+    # - yum install -y zip tar gzip # Required for Go installation
+    # # Install Go 1.23.5
+    # - curl -OL https://go.dev/dl/go1.23.5.linux-arm64.tar.gz # ARM64 (Graviton)
+    # # For x86_64: curl -OL https://go.dev/dl/go1.23.5.linux-amd64.tar.gz
+    # - tar -C /usr/local -xzf go1.23.5.linux-arm64.tar.gz
+    # - export PATH=$PATH:/usr/local/go/bin
+    # - go version # Verify installation
   build:
     commands:
     - cd lambdas # we need to be in the lambdas directory
