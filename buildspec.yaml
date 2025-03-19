@@ -24,9 +24,25 @@ phases:
         aws lambda update-function-code \
           --function-name "arora-search-${dirname}" \
           --zip-file "fileb://${dirname}.zip" || { echo "Function code update failed"; exit 1; }
-        version=$(aws lambda publish-version \
+        echo "Waiting for function update to complete..."
+        aws lambda wait function-updated \
           --function-name "arora-search-${dirname}" \
-          --description "PROD Release" | jq -r '.Version') || { echo "Version publish failed"; exit 1; }
+          || { echo "Wait for function update timed out"; exit 1; }
+        retry_count=0
+        max_retries=3
+        version=""
+        until [ "$version" ] || [ $retry_count -ge $max_retries ]; do
+          ((retry_count++))
+          echo "Publishing version (attempt $retry_count)"
+          version=$(aws lambda publish-version \
+            --function-name "arora-search-${dirname}" \
+            --description "PROD Release" | jq -r '.Version') && break
+          sleep 5
+        done
+        if [ -z "$version" ]; then
+          echo "Failed to publish version after $max_retries attempts"
+          exit 1
+        fi
         aws lambda update-alias \
           --function-name "arora-search-${dirname}" \
           --name PROD \
@@ -47,4 +63,6 @@ phases:
     # 6. make the bootstrap executable
     # 7. zip the bootstrap file (this is what we send to the lambda function)
     # 8. cd out of the directory we just worked with
-    # 9. deploy the new function code to lambda and publish it as a new version
+    # 9. deploy the new function code to lambda
+    # 10. publish a new lambda version based on the newly delivered code (a "PROD Release")
+    # 11. update the PROD alias to this new version (or create it if it doesnt exist, which should never happen)
