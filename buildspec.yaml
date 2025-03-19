@@ -5,17 +5,7 @@ phases:
     runtime-versions:
       golang: 1.23.5
     commands:
-    # - runtime-v
-    # - yum update -y
     - yum install -y zip
-    # - yum update -y
-    # - yum install -y zip tar gzip # Required for Go installation
-    # # Install Go 1.23.5
-    # - curl -OL https://go.dev/dl/go1.23.5.linux-arm64.tar.gz # ARM64 (Graviton)
-    # # For x86_64: curl -OL https://go.dev/dl/go1.23.5.linux-amd64.tar.gz
-    # - tar -C /usr/local -xzf go1.23.5.linux-arm64.tar.gz
-    # - export PATH=$PATH:/usr/local/go/bin
-    # - go version # Verify installation
   build:
     commands:
     - cd lambdas # we need to be in the lambdas directory
@@ -25,7 +15,7 @@ phases:
         cd "$dirname";
         GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go || { echo "Bootstrap failed"; exit 1; };
         if [ ! -f "bootstrap" ]; then
-          echo "Error: bootstrap not created in $dirname";
+          echo "Error: Bootstrap not created in $dirname";
           exit 1;
         fi
         chmod +x bootstrap;
@@ -33,8 +23,20 @@ phases:
         cd ..
         aws lambda update-function-code \
           --function-name "arora-search-${dirname}" \
-          --zip-file "fileb://${dirname}.zip" \
-          --publish;
+          --zip-file "fileb://${dirname}.zip" || { echo "Function code update failed"; exit 1; }
+        version=$(aws lambda publish-version \
+          --function-name "arora-search-${dirname}" \
+          --description "PROD Release" | jq -r '.Version') || { echo "Version publish failed"; exit 1; }
+        aws lambda update-alias \
+          --function-name "arora-search-${dirname}" \
+          --name PROD \
+          --function-version "$version" \
+          --description "PROD Release" || \
+        aws lambda create-alias \
+          --function-name "arora-search-${dirname}" \
+          --name PROD \
+          --function-version "$version" \
+          --description "PROD Release" || { echo "Alias update/create failed"; exit 1; }
       done
     # the previous code does the following:
     # 1. loop through the directories in the lambdas directory
