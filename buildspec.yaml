@@ -3,8 +3,16 @@ version: 0.2
 phases:
   install:
     commands:
+    # - yum update -y
+    # - yum install -y zip golang
     - yum update -y
-    - yum install -y zip golang
+    - yum install -y zip tar gzip # Required for Go installation
+    # Install Go 1.23.5
+    - curl -OL https://go.dev/dl/go1.23.5.linux-arm64.tar.gz # ARM64 (Graviton)
+    # For x86_64: curl -OL https://go.dev/dl/go1.23.5.linux-amd64.tar.gz
+    - tar -C /usr/local -xzf go1.23.5.linux-arm64.tar.gz
+    - export PATH=$PATH:/usr/local/go/bin
+    - go version # Verify installation
   build:
     commands:
     - cd lambdas # we need to be in the lambdas directory
@@ -12,7 +20,7 @@ phases:
       for dir in */ ; do
         dirname=${dir%/};
         cd "$dirname";
-        GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go || { echo "Build failed"; exit 1; };
+        GOOS=linux GOARCH=amd64 go build -mod=readonly -o bootstrap main.go || { echo "Bootstrap failed"; exit 1; };
         if [ ! -f "bootstrap" ]; then
           echo "Error: bootstrap not created in $dirname";
           exit 1;
