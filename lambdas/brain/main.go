@@ -4,7 +4,6 @@ import (
 	"arora-search-brain/body"
 	"arora-search-brain/layer"
 	"encoding/json"
-	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,7 +23,6 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	)
 
 	if err := json.Unmarshal([]byte(request.Body), &requestData); err != nil {
-		log.Println(err.Error())
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
 			Headers:    headers,
