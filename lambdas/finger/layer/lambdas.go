@@ -1,12 +1,21 @@
 package layer
 
+// universe search criteria
+type SearchCriteria struct {
+	Name           *string `json:"name"`
+	Description    *string `json:"description"`
+	Playing        *int    `json:"playing"`
+	Visits         *int    `json:"visits"`
+	FavoritedCount *int    `json:"favoritedCount"`
+}
+
 // lambda request struct
 type RequestData struct {
-	MaxID *int64 `json:"maxID"`
+	MaxID          int64          `json:"maxID"`
+	SearchCriteria SearchCriteria `json:"searchCriteria"`
 }
 
 // lambda response struct
 type ResponseData struct {
-	Success  int8    `json:"success"`
-	ValidIDs []int64 `json:"validIDs"`
+	ValidUniverses []Universe `json:"validUniverses"`
 }

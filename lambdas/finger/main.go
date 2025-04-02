@@ -22,12 +22,11 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	finger := body.Finger(*requestData.MaxID)
-	validIDs, suc := finger.Feel()
+	finger := body.Finger(requestData.MaxID, requestData.SearchCriteria)
+	validUniverses := finger.Feel()
 
 	responseData := layer.ResponseData{
-		Success:  suc,
-		ValidIDs: validIDs,
+		ValidUniverses: validUniverses,
 	}
 
 	bytesResponse, err := json.Marshal(responseData)

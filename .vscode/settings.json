@@ -1,0 +1,18 @@
+{
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "lambdas\\\\brain\\\\.*",
+                "cmd": "builds\\build.cmd brain",
+                "message": "Running brain upload",
+                "messageAfter": "Finished brain upload"
+            },
+            {
+                "match": "lambdas\\\\finger\\\\.*",
+                "cmd": "builds\\build.cmd finger",
+                "message": "Running finger upload",
+                "messageAfter": "Finished finger upload"
+            }
+        ]
+    }
+}

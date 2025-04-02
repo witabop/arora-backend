@@ -1,6 +1,25 @@
-POST https://vjmicpnc2k.execute-api.us-east-2.amazonaws.com/RUFinger
+GET https://r8oxhje7na.execute-api.us-east-1.amazonaws.com/dev/search/finger
 Content-Type: application/json
 
 {
-    "maxID": 7000000000
+    "maxID": 7000000000,
+    "searchCriteria": {
+        "name": "john",
+        "playing": 1,
+        "visits": 1
+    }
+}
+
+
+###
+
+
+POST https://r8oxhje7na.execute-api.us-east-1.amazonaws.com/dev/search/brain
+Content-Type: application/json
+
+{
+    "numGames": 5,
+    "searchCriteria": {
+        "visits": 1
+    }
 }
