@@ -30,7 +30,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	brain := body.Brain(requestData.NumGames, requestData.SearchCriteria)
+	brain := body.Brain(requestData.NumGames, requestData.SearchCriteria, request.RequestContext.Stage)
 	validUniverses := brain.Think()
 
 	responseData := layer.ResponseData{

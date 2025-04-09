@@ -22,7 +22,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		}, nil
 	}
 
-	finger := body.Finger(requestData.MaxID, requestData.SearchCriteria)
+	finger := body.Finger(requestData.MaxID, requestData.SearchCriteria, request.RequestContext.Stage)
 	validUniverses := finger.Feel()
 
 	responseData := layer.ResponseData{

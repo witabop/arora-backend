@@ -4,6 +4,7 @@ import (
 	"arora-search-brain/layer"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 
 const (
 	MAX_ACTIVE_NEURONS uint8  = 50
-	FINGER_URL         string = "https://r8oxhje7na.execute-api.us-east-1.amazonaws.com/dev/search/finger"
+	BASE_FINGER_URL    string = "https://r8oxhje7na.execute-api.us-east-1.amazonaws.com/%s/search/finger"
 )
 
 var client http.Client
@@ -28,14 +29,18 @@ type brain struct {
 	searchCriteria layer.SearchCriteria
 	mu             sync.Mutex
 	maxID          int64
+	prod           bool
+	fingerUrl      string
 }
 
-func Brain(numGames uint8, searchCriteria layer.SearchCriteria) IBrain {
+func Brain(numGames uint8, searchCriteria layer.SearchCriteria, stage string) IBrain {
 	brain := brain{
 		validUniverses: []layer.Universe{},
 		numGames:       numGames,
 		searchCriteria: searchCriteria,
 		maxID:          7_000_000_000,
+		prod:           stage == "prod",
+		fingerUrl:      fmt.Sprintf(BASE_FINGER_URL, stage),
 	}
 	return &brain
 }
@@ -49,22 +54,33 @@ func (brain *brain) Think() []layer.Universe {
 		timeout         = time.After(28 * time.Second)
 	)
 
-	for len(brain.validUniverses) < int(brain.numGames) {
-		select {
-		case <-timeout:
-			log.Println("Could not get numGames in alloted time")
-			return brain.validUniverses
+	if brain.prod {
+		for len(brain.validUniverses) < int(brain.numGames) {
+			select {
+			case <-timeout:
+				log.Println("Could not get numGames in alloted time")
+				return brain.validUniverses
 
-		default:
-			for neuronCtr < MAX_ACTIVE_NEURONS {
+			default:
+				for neuronCtr < MAX_ACTIVE_NEURONS {
+					go brain.prepareNeuron(neuronCh)
+					neuronCtr++
+				}
+				universes := <-neuronCh
+				if len(universes) > 0 {
+					brain.addValidUniverses(universes)
+				}
 				go brain.prepareNeuron(neuronCh)
-				neuronCtr++
 			}
+		}
+	} else {
+		for {
+			go brain.prepareNeuron(neuronCh)
 			universes := <-neuronCh
 			if len(universes) > 0 {
 				brain.addValidUniverses(universes)
+				break
 			}
-			go brain.prepareNeuron(neuronCh)
 		}
 	}
 	return brain.validUniverses
@@ -116,7 +132,7 @@ func (brain *brain) activateNeuron() (*http.Response, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", FINGER_URL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("GET", brain.fingerUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}

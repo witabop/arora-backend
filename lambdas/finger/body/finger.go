@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -32,13 +33,15 @@ type finger struct {
 	validUniverses *[]layer.Universe
 	searchCriteria layer.SearchCriteria
 	mu             sync.Mutex
+	prod           bool
 }
 
-func Finger(maxID int64, searchCriteria layer.SearchCriteria) IFinger {
+func Finger(maxID int64, searchCriteria layer.SearchCriteria, stage string) IFinger {
 	finger := finger{
 		maxID:          maxID,
 		validUniverses: &[]layer.Universe{},
 		searchCriteria: searchCriteria,
+		prod:           stage == "prod",
 	}
 	return &finger
 }
@@ -90,7 +93,8 @@ func (finger *finger) touch(start int64, end int64) {
 	}
 
 	for _, universe := range *universeResponse.Data {
-		if finger.validateUniverse(universe) {
+		finger.calculatePercentage(&universe)
+		if !finger.prod || *universe.PercentMatch >= 0.5 {
 			finger.addValidUniverse(universe)
 		}
 	}
@@ -124,9 +128,10 @@ func (finger *finger) formatIDs(start int64, end int64) string {
 	return builder.String()
 }
 
-func (finger *finger) validateUniverse(universe layer.Universe) bool {
+func (finger *finger) calculatePercentage(universe *layer.Universe) {
 	critValue := reflect.ValueOf(finger.searchCriteria)
-	uniValue := reflect.ValueOf(universe)
+	uniValue := reflect.ValueOf(universe).Elem()
+	percentages := []float64{}
 
 	for i := 0; i < critValue.NumField(); i++ {
 		critField := critValue.Field(i)
@@ -142,35 +147,19 @@ func (finger *finger) validateUniverse(universe layer.Universe) bool {
 
 		uniField := uniValue.FieldByName(fieldName)
 		if !uniField.IsValid() {
-			return false
+			continue
 		}
 
 		critVal := critField.Elem()
 		uniVal := uniField.Elem()
 
-		switch critVal.Kind() {
-		case reflect.String:
-			if !strings.Contains(uniVal.String(), critVal.String()) {
-				return false
-			}
-
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			if (uint(float64(critVal.Uint()) * .5)) > uint(uniVal.Uint()) {
-				return false
-			}
-
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			if (int(float64(critVal.Int()) * .5)) > int(uniVal.Int()) {
-				return false
-			}
-
-		default:
-			if !reflect.DeepEqual(critVal.Interface(), uniVal.Interface()) {
-				return false
-			}
-		}
+		percentages = append(percentages, CompareValues(critVal, uniVal))
 	}
-	return true
+
+	if universe.PercentMatch == nil {
+		universe.PercentMatch = new(float64)
+	}
+	*universe.PercentMatch = math.Round(Avg(percentages)*10000) / 10000
 }
 
 func (finger *finger) addValidUniverse(vuniverse layer.Universe) {
