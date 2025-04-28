@@ -17,7 +17,7 @@ type Number interface {
 
 func Avg(nums []float64) float64 {
 	if len(nums) == 0 {
-		return 0.0
+		return 1.0
 	}
 
 	sum := 0.0
@@ -73,8 +73,8 @@ func numberSimilarity[T Number](crit, comp T) float64 {
 
 func stringSimilarity(crit, comp string) float64 {
 	similarityPercentages := []float64{}
-	critWords := strings.Fields(crit)
-	compWords := strings.Fields(comp)
+	critWords := strings.Fields(strings.ToLower(crit))
+	compWords := strings.Fields(strings.ToLower(comp))
 
 	for _, critWord := range critWords {
 		bestSim := 0.0
@@ -94,7 +94,7 @@ func similarityPercentage(a, b string) float64 {
 	distance := lavenshteinDistance(a, b)
 	maxLen := max(len([]rune(a)), len([]rune(b)))
 	if maxLen == 0 {
-		return 100.0
+		return 1.0
 	}
 	return (1.0 - (float64(distance) / float64(maxLen)))
 }
@@ -118,7 +118,7 @@ func lavenshteinDistance(a, b string) int {
 	}
 
 	for i := 1; i <= aLen; i++ {
-		for j := 1; j < bLen; j++ {
+		for j := 1; j <= bLen; j++ {
 			cost := 0
 			if aRunes[i-1] != bRunes[j-1] {
 				cost = 1

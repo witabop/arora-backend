@@ -159,6 +159,7 @@ func (finger *finger) calculatePercentage(universe *layer.Universe) {
 	if universe.PercentMatch == nil {
 		universe.PercentMatch = new(float64)
 	}
+
 	*universe.PercentMatch = math.Round(Avg(percentages)*10000) / 10000
 }
 

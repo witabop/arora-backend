@@ -18,6 +18,7 @@ Content-Type: application/json
 {
     "numGames": 5,
     "searchCriteria": {
-        "visits": 1
+        //"description": "roblos"
+        //"visits": 1
     }
 }
